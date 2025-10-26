@@ -20,7 +20,7 @@ def test_init_from_bitarray():
 
 
 def test_init_from_bytes():
-    data = b"\xB2"
+    data = b"\xb2"
     view = bitview(data)
     assert len(view) == 8
     for i, b in enumerate(map(int, "10110010")):
@@ -28,7 +28,7 @@ def test_init_from_bytes():
 
 
 def test_init_from_bytearray():
-    data = bytearray(b"\xFF\x00")
+    data = bytearray(b"\xff\x00")
     view = bitview(data)
     assert len(view) == 16
     for i in range(8):
@@ -132,17 +132,17 @@ def test_len_with_step():
 
 
 def test_tobytes_full_view():
-    data = b"\xB2\xFF"
+    data = b"\xb2\xff"
     view = bitview(data)
-    assert view.tobytes() == b"\xB2\xFF"
+    assert view.tobytes() == b"\xb2\xff"
 
 
 def test_tobytes_sliced_view():
     arr = bitarray("1011001011110000")
     view = bitview(arr)[0:8]
-    assert view.tobytes() == b"\xB2"
+    assert view.tobytes() == b"\xb2"
     view = bitview(arr)[2:5]
-    assert view.tobytes() == b"\xC0"
+    assert view.tobytes() == b"\xc0"
     view = bitview(arr)[3:10]
     assert view.tobytes() == b"\x96"
     view = bitview(arr)[3:14]
@@ -150,29 +150,29 @@ def test_tobytes_sliced_view():
 
 
 def test_bytes_conversion():
-    data = b"\xAB\xCD"
+    data = b"\xab\xcd"
     view = bitview(data)
-    assert bytes(view) == b"\xAB\xCD"
+    assert bytes(view) == b"\xab\xcd"
 
 
 def test_buffer_interface_contiguous():
-    data = b"\xFF\x00\xAA"
+    data = b"\xff\x00\xaa"
     view = bitview(data)
     mv = memoryview(view)
-    assert bytes(mv) == b"\xFF\x00\xAA"
+    assert bytes(mv) == b"\xff\x00\xaa"
 
 
 def test_buffer_interface_with_slice():
-    data = b"\xFF\xCC\xBB\xAA"
+    data = b"\xff\xcc\xbb\xaa"
     view = bitview(data)
     mv = memoryview(view[8:24])
-    assert bytes(mv) == b"\xCC\xBB"
+    assert bytes(mv) == b"\xcc\xbb"
     mv = memoryview(view[9:23])
-    assert bytes(mv) == b"\xCC\xBB"
+    assert bytes(mv) == b"\xcc\xbb"
 
 
 def test_buffer_interface_non_contiguous_raises():
-    data = b"\xFF\x00\xAA"
+    data = b"\xff\x00\xaa"
     view = bitview(data)[::2]
     with pytest.raises(NotImplementedError):
         _ = memoryview(view)

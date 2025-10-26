@@ -51,13 +51,13 @@ class bitview(Buffer):
         if abs(self._step) != 1:
             raise NotImplementedError("buffer interface only supported for contiguous bitviews")
         view = self._data.__buffer__(flag)
-        return view[self._start // 8:(self._stop + 7) // 8:self._step]
+        return view[self._start // 8 : (self._stop + 7) // 8 : self._step]
 
     def __release_buffer__(self, buffer: memoryview):
         self._data.__release_buffer__(buffer)
 
     def __bytes__(self) -> bytes:
-        return self._data[self._start:self._stop:self._step].tobytes()
+        return self._data[self._start : self._stop : self._step].tobytes()
 
     def tobytes(self):
         return bytes(self)
