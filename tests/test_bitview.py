@@ -87,6 +87,16 @@ def test_slice_with_step():
     assert view[3] == 1
 
 
+def test_slice_with_negative_step():
+    arr = bitarray("10110010")
+    view = bitview(arr)[::-2]
+    assert len(view) == 4
+    assert view[0] == 0
+    assert view[1] == 0
+    assert view[2] == 1
+    assert view[3] == 0
+
+
 def test_slice_negative_indices():
     arr = bitarray("10110010")
     view = bitview(arr)[-4:-1]
@@ -186,25 +196,6 @@ def test_bitview_from_bitview_slice():
     for i in range(4):
         assert view1[i] == view2[i]
     assert view1._data is view2._data
-
-
-def test_abs_idx():
-    arr = bitarray("10110010")
-    view = bitview(arr)
-    assert view._abs_idx(0) == 0
-    assert view._abs_idx(3) == 3
-    assert view._abs_idx(7) == 7
-    assert view._abs_idx(-1) == 7
-    assert view._abs_idx(-8) == 0
-
-
-def test_abs_idx_on_sliced_view():
-    arr = bitarray("10110010")
-    view = bitview(arr)[2:6]
-    assert view._abs_idx(0) == 2
-    assert view._abs_idx(3) == 5
-    assert view._abs_idx(-1) == 5
-    assert view._abs_idx(-3) == 3
 
 
 def test_single_bit_slice():

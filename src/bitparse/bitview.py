@@ -12,7 +12,7 @@ class bitview(Buffer):
         if isinstance(buffer, bitview):
             self._data = buffer._data
             self._start = buffer._start
-            self._stop = buffer._stop
+            self._len = buffer._len
             self._step = buffer._step
         else:
             if isinstance(buffer, bitarray):
@@ -20,55 +20,47 @@ class bitview(Buffer):
             else:
                 self._data = bitarray(buffer=buffer, endian="big")
             self._start = 0
-            self._stop = len(self._data)
+            self._len = len(self._data)
             self._step = 1
 
     @functools.singledispatchmethod
     def __getitem__(self, idx: int) -> Literal[0, 1]:
-        idx = self._abs_idx(idx)
-        if not self._start <= idx < self._stop:
+        if idx < 0:
+            idx += len(self)
+        if not 0 <= idx < len(self):
             raise IndexError("bitview index out of range: {idx=}")
+        idx = self._step * idx + self._start
         return self._data[idx]
 
     @__getitem__.register
     def _(self, idx: slice) -> Self:
-        if idx.step == 0:
-            raise ValueError("slice step cannot be zero")
-        # Convert None values to defaults.
-        start = 0 if idx.start is None else idx.start
-        stop = len(self) if idx.stop is None else idx.stop
-        step = 1 if idx.step is None else idx.step
-        # Adjust start and stop to fall within the current subview.
-        start = max(self._abs_idx(start), self._start)
-        stop = min(self._abs_idx(stop), self._stop)
-
+        r = range(*idx.indices(len(self)))
         view = type(self)(self._data)
-        view._start = start
-        view._stop = stop
-        view._step = step * self._step
+        view._start = self._start + r.start
+        view._len = len(r)
+        view._step = self._step * r.step
         return view
 
     def __len__(self) -> int:
-        return math.ceil((self._stop - self._start) / self._step)
+        return self._len
 
     def __buffer__(self, flag: BufferFlags) -> memoryview:
-        if abs(self._step) != 1:
+        if self._step != 1:
             raise NotImplementedError("buffer interface only supported for contiguous bitviews")
         view = self._data.__buffer__(flag)
-        return view[self._start // 8 : (self._stop + 7) // 8 : self._step]
+        stop = self._start + len(self) * self._step
+        return view[self._start // 8 : ceildiv(stop, 8)]
 
     def __release_buffer__(self, buffer: memoryview):
         self._data.__release_buffer__(buffer)
 
     def __bytes__(self) -> bytes:
-        return self._data[self._start : self._stop : self._step].tobytes()
+        stop = self._start + len(self) * self._step
+        return self._data[self._start : stop : self._step].tobytes()
 
     def tobytes(self):
         return bytes(self)
 
-    def _abs_idx(self, idx: int) -> int:
-        """Convert the idx to be non-negative and to start from the first bit of self._data."""
-        if idx < 0:
-            idx += len(self)
-        offset = self._start if self._step > 0 else self._stop
-        return self._step * idx + offset
+
+def ceildiv(a: int, b: int) -> int:
+    return -(-a // b)
