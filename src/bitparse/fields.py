@@ -7,6 +7,7 @@ import bitarray.util as util
 
 from .bitview import bitview
 
+
 @dataclass
 class Field[T](Protocol):
     placeholder: bool = False
@@ -75,9 +76,9 @@ class Bool:
         return util.int2ba(val, length=self.bits, signed=False)
 
 
-type f16 = Annotated[int, Float(bits=16)]
-type f32 = Annotated[int, Float(bits=32)]
-type f64 = Annotated[int, Float(bits=64)]
+type f16 = Annotated[float, Float(bits=16)]
+type f32 = Annotated[float, Float(bits=32)]
+type f64 = Annotated[float, Float(bits=64)]
 
 type u1 = Annotated[int, UInt(bits=1)]
 type u2 = Annotated[int, UInt(bits=2)]
