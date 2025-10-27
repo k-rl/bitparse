@@ -226,3 +226,25 @@ def test_complex_nested_slicing():
     assert view4[1] == arr[11]
     assert view4[-2] == arr[7]
     assert view4[-1] == arr[11]
+
+
+def test_to_int_unsigned():
+    arr = bitarray("10110010")
+    view = bitview(arr)
+    assert view.to_int() == 178
+    view_sliced = view[0:4]
+    assert view_sliced.to_int() == 11
+
+
+def test_to_int_signed_positive():
+    arr = bitarray("01011010")
+    view = bitview(arr)
+    assert view.to_int(signed=True) == 90
+    assert view.to_int(signed=False) == 90
+
+
+def test_to_int_signed_negative():
+    arr = bitarray("10110010")
+    view = bitview(arr)
+    assert view.to_int(signed=True) == -78
+    assert view.to_int(signed=False) == 178
