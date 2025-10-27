@@ -1,4 +1,4 @@
-from .bit_model import BitModel, u8
+from .bit_model import BitModel
 from .bitview import bitview
 
-__all__ = ["BitModel", "bitview", "u8"]
+__all__ = ["BitModel", "bitview", "fields"]

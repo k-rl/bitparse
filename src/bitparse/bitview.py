@@ -2,9 +2,9 @@ from collections.abc import Buffer
 from inspect import BufferFlags
 from typing import Literal, Self
 import functools
-import math
 
 from bitarray import bitarray
+import bitarray.util as util
 
 
 class bitview(Buffer):
@@ -60,6 +60,10 @@ class bitview(Buffer):
 
     def tobytes(self):
         return bytes(self)
+
+    def toint(self, signed: bool = False) -> int:
+        stop = self._start + len(self) * self._step
+        return util.ba2int(self._data[self._start : stop : self._step], signed=signed)
 
 
 def ceildiv(a: int, b: int) -> int:

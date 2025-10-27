@@ -1,70 +1,70 @@
 import ast
+import copy
+import typing
 from collections.abc import Buffer
-from typing import Annotated, dataclass_transform, Protocol, Self
-import inspect
+from typing import dataclass_transform, Self
 
 from .bitview import bitview
-
-type u8 = Annotated[int, UInt(bits=8)]
+from .fields import Field
 
 
 @dataclass_transform()
 class BitMeta(type):
     def __new__(meta, name, bases, dct):
         cls = super().__new__(meta, name, bases, dct)
-        print(cls, bases)
+        print(dct)
         if not bases:
             return cls
-        fields = []
+
         args = [ast.arg(arg="self")]
         body = []
         namespace = {}
         for name, annotation in dct["__annotations__"].items():
+            py_type, field = typing.get_args(annotation.__value__)
+            field = copy.copy(field)
+            if name.startswith("_"):
+                field.placeholder = True
             type_name = f"__T_for_{name}"
-            namespace[type_name] = annotation
-            args.append(ast.arg(arg=name, annotation=ast.Name(id=type_name, ctx=ast.Load())))
-            body.append(
-                ast.Assign(
-                    targets=[ast.Attribute(ast.Name("self", ast.Load()), name, ast.Store())],
-                    value=ast.Name(name, ast.Load())
+            namespace[type_name] = py_type
+            if not field.placeholder:
+                args.append(ast.arg(arg=name, annotation=ast.Name(id=type_name, ctx=ast.Load())))
+                body.append(
+                    ast.Assign(
+                        targets=[ast.Attribute(ast.Name("self", ast.Load()), name, ast.Store())],
+                        value=ast.Name(name, ast.Load()),
+                    )
                 )
-            )
-        mod = ast.Module([
-            ast.FunctionDef(
-                name="__init__",
-                args=ast.arguments(args=args),
-                body=body
-            )
-        ])
+            cls.fields[name] = field
+        mod = ast.Module(
+            [
+                ast.FunctionDef(
+                    name="__init__",
+                    args=ast.arguments(
+                        posonlyargs=[], args=args, kwonlyargs=[], kw_defaults=[], defaults=[]
+                    ),
+                    body=body,
+                    decorator_list=[],
+                    type_params=[],
+                )
+            ],
+            type_ignores=[],
+        )
         ast.fix_missing_locations(mod)
         code = compile(mod, filename="<dynamic>", mode="exec")
         exec(code, namespace)
         setattr(cls, "__init__", namespace["__init__"])
-        print("AAA")
-        print(cls)
         return cls
 
 
 class BitModel(metaclass=BitMeta):
+    fields: dict[str, Field] = {}
+
     @classmethod
     def from_bytes(cls, buffer: Buffer) -> Self:
+        buffer = bitview(buffer)
         init_kwargs = {}
-        """
-        for field in self._fields:
-            val, buffer = field.from_bytes(buffer, init_kwargs)
+        for name, field in cls.fields.items():
+            val, buffer = field.from_bytes(buffer)
             if not field.placeholder:
-                init_kwargs[field.name] = val
-        """
-        print(inspect.signature(cls.__init__))
-        return cls(i=0, j=2, k=3)
-
-
-class Field[T](Protocol):
-    @classmethod
-    def from_bytes(cls, buffer: bitview) -> tuple[T, bitview]: ...
-
-
-class UInt:
-    @classmethod
-    def from_bytes(cls, buffer: bitview) -> tuple[int, bitview]:
-        return int.from_bytes(buffer[:8], signed=False), buffer[8:]
+                init_kwargs[name] = val
+        return cls(**init_kwargs)
