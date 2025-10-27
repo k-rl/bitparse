@@ -9,15 +9,19 @@ from bitarray import bitarray
 
 class bitview(Buffer):
     def __init__(self, buffer: Buffer):
-        if isinstance(buffer, bitarray):
-            self._data = buffer
-        elif isinstance(buffer, bitview):
+        if isinstance(buffer, bitview):
             self._data = buffer._data
+            self._start = buffer._start
+            self._stop = buffer._stop
+            self._step = buffer._step
         else:
-            self._data = bitarray(buffer=buffer, endian="big")
-        self._start = 0
-        self._stop = len(self._data)
-        self._step = 1
+            if isinstance(buffer, bitarray):
+                self._data = buffer
+            else:
+                self._data = bitarray(buffer=buffer, endian="big")
+            self._start = 0
+            self._stop = len(self._data)
+            self._step = 1
 
     @functools.singledispatchmethod
     def __getitem__(self, idx: int) -> Literal[0, 1]:

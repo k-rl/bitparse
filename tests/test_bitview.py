@@ -178,6 +178,16 @@ def test_buffer_interface_non_contiguous_raises():
         _ = memoryview(view)
 
 
+def test_bitview_from_bitview_slice():
+    arr = bitarray("10110010")
+    view1 = bitview(arr)[2:6]
+    view2 = bitview(view1)
+    assert len(view2) == 4
+    for i in range(4):
+        assert view1[i] == view2[i]
+    assert view1._data is view2._data
+
+
 def test_abs_idx():
     arr = bitarray("10110010")
     view = bitview(arr)
