@@ -18,6 +18,7 @@ class BitMeta(type):
         if not bases:
             return cls
 
+        cls.fields = {}
         args = [ast.arg(arg="self")]
         body = []
         namespace = {}
