@@ -8,7 +8,7 @@ def test_empty_bitview():
     arr = bitarray()
     view = bitview(arr)
     assert len(view) == 0
-    assert view.tobytes() == b""
+    assert view.to_bytes() == b""
 
 
 def test_init_from_bitarray():
@@ -141,22 +141,22 @@ def test_len_with_step():
     assert len(view2) == 3
 
 
-def test_tobytes_full_view():
+def test_to_bytes_full_view():
     data = b"\xb2\xff"
     view = bitview(data)
-    assert view.tobytes() == b"\xb2\xff"
+    assert view.to_bytes() == b"\xb2\xff"
 
 
-def test_tobytes_sliced_view():
+def test_to_bytes_sliced_view():
     arr = bitarray("1011001011110000")
     view = bitview(arr)[0:8]
-    assert view.tobytes() == b"\xb2"
+    assert view.to_bytes() == b"\xb2"
     view = bitview(arr)[2:5]
-    assert view.tobytes() == b"\xc0"
+    assert view.to_bytes() == b"\xc0"
     view = bitview(arr)[3:10]
-    assert view.tobytes() == b"\x96"
+    assert view.to_bytes() == b"\x96"
     view = bitview(arr)[3:14]
-    assert view.tobytes() == b"\x97\x80"
+    assert view.to_bytes() == b"\x97\x80"
 
 
 def test_bytes_conversion():

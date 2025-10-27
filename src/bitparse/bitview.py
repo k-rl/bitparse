@@ -58,10 +58,10 @@ class bitview(Buffer):
         stop = self._start + len(self) * self._step
         return self._data[self._start : stop : self._step].tobytes()
 
-    def tobytes(self):
+    def to_bytes(self):
         return bytes(self)
 
-    def toint(self, signed: bool = False) -> int:
+    def to_int(self, signed: bool = False) -> int:
         stop = self._start + len(self) * self._step
         return util.ba2int(self._data[self._start : stop : self._step], signed=signed)
 

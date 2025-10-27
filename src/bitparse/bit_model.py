@@ -4,6 +4,8 @@ import typing
 from collections.abc import Buffer
 from typing import dataclass_transform, Self
 
+from bitarray import bitarray
+
 from .bitview import bitview
 from .fields import Field
 
@@ -68,3 +70,16 @@ class BitModel(metaclass=BitMeta):
             if not field.placeholder:
                 init_kwargs[name] = val
         return cls(**init_kwargs)
+
+    def to_bytes(self) -> bytes:
+        arr = bitarray()
+        for name, field in self.fields.items():
+            if field.placeholder:
+                val = 0
+            else:
+                val = getattr(self, name)
+            arr.extend(field.to_bits(val))
+        return arr.tobytes()
+
+    def __bytes__(self) -> bytes:
+        return self.to_bytes()
